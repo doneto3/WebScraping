@@ -1,0 +1,33 @@
+
+{% extends 'exams/common.html' %}
+{% block content %}
+    <div class="container my-5 text-center" style="max-width:580px">
+        <h1>Prenotazioni per esami facili da gestire!</h1>
+        <p class="lead">Un modo semplice e veloce per poter programmare esami e prenotare aule senza sovrapposizioni
+        </p>
+    </div>
+
+
+    <div class="container">
+        <div class="row">
+            {% for f in facoltà %}
+            <div class="col-sm">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <a href="{{ f.id }}">
+                            <h5>
+                                Esami {{ f.nome }}
+                            </h5>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <br><br><br><br>
+
+
+
+
+{% endblock %}
