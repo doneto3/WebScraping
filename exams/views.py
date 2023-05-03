@@ -1,10 +1,54 @@
 from django.contrib.auth.models import User
+from django.core.management.color import no_style
+from django.db import connection
+from datetime import datetime as dt, timedelta, date
 from django.shortcuts import render
 from .models import Facoltà, Exam, DateExam
+from django.views import generic
+import calendar
+from .utils import Calendar
+from django.utils.safestring import mark_safe
 from exams.HTMLParsing import *
 from django.http import HttpResponseRedirect
 
 # Create your views here.
+
+def get_date(req_month):
+    if req_month:
+        year, month = (int(x) for x in req_month.split('-'))
+        return date(year, month, day=1)
+    return dt.today()
+
+def prev_month(d):
+    first = d.replace(day=1)
+    prev_month = first - timedelta(days=1)
+    month = 'month=' + str(prev_month.year) + '-' + str(prev_month.month)
+    return month
+
+def next_month(d):
+    days_in_month = calendar.monthrange(d.year, d.month)[1]
+    last = d.replace(day=days_in_month)
+    next_month = last + timedelta(days=1)
+    month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
+    return month
+
+
+class CalendarView(generic.ListView):
+    model = DateExam
+    template_name = 'exams/calendar.html'
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        d = get_date(self.request.GET.get('month', None))
+        cal = Calendar(d.year, d.month)
+        cal.getI(self.kwargs['i'], self.kwargs['id'])
+        html_cal = cal.formatmonth(withyear=True)
+        context['calendar'] = mark_safe(html_cal)
+        context['prev_month'] = prev_month(d)
+        context['next_month'] = next_month(d)
+        context['id'] = self.kwargs['id']
+        context['i'] = self.kwargs['i']
+        return context
 
 
 
@@ -14,7 +58,7 @@ def createFacoulty():
     courses = get_corso_di_studio_ingegneria()
     durata = getDurata()
     for i in range(1, len(courses)):
-        Facoltà.objects.get_or_create(nome=courses[i].text,anno=durata[i-1])
+        Facoltà.objects.create(nome=courses[i].text,anno=durata[i-1])
 
 def createDateExam(facoltà):
     date = getDateExam()
@@ -39,16 +83,49 @@ def getCod(facoltà):
     print(ret)
     return ret
 
-createFacoulty()
 
-for facoltà in Facoltà.objects.all():
-    connectToEsse3Page(getCod(facoltà))
-    createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
-    createDateExam(facoltà)
+
+import threading
+
+def restart():
+
+    threading.Timer(86400.0, restart).start()
+
+    fac = Facoltà.objects.all()
+    for fa in fac:
+        fa.delete()
+
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Facoltà, Exam, DateExam])
+    with connection.cursor() as cursor:
+        for sql in sequence_sql:
+            cursor.execute(sql)
+
+    createFacoulty()
+    for facoltà in Facoltà.objects.all():
+        if getCod(facoltà) is not None:
+            #connectToEsse3Page(getCod(facoltà))
+            createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
+            createDateExam(facoltà)
+        else:
+            continue
+
+restart()
 
 
 def exams(request):
-    facoltà = Facoltà.objects.all()
+
+    facoltà = list(Facoltà.objects.all())
+
+    dat = list(DateExam.objects.values_list('exam__facoltà__nome', flat=True))
+
+    i = 0
+
+    for fac in Facoltà.objects.all():
+        if fac.nome not in dat:
+            facoltà.pop(i)
+        else:
+            i += 1
+
     context = {
         "facoltà": facoltà,
     }
@@ -57,7 +134,8 @@ def exams(request):
 
 def choice(request,id):
     facoltà = Facoltà.objects.get(id=id)
-
+    global i
+    i=id
     context = {
         "facoltà": facoltà,
     }

@@ -1,0 +1,13 @@
+{% extends 'exams/base.html' %}
+
+{% block title %}
+Calendar
+{% endblock %}
+
+{% block body %}
+    <div class="clearfix">
+	    <a class="btn btn-info left" href="{% url 'facoltà' id=id i=i %}?{{ prev_month }}"> Previous Month </a>
+	    <a class="btn btn-info right" href="{% url 'facoltà' id=id i=i %}?{{ next_month }}"> Next Month </a>
+    </div>
+    {{ calendar }}
+{% endblock %}

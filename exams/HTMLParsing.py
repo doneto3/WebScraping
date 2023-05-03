@@ -127,6 +127,9 @@ def apostrofoString(e):
 def connectToEsse3Page(cod):
     global anno, semestre, crediti, exam, durata, dateExam, examNull
     cds_id = corso_di_studio_ingegneria.get(cod)
+    setZero()
+    if cds_id is None:
+        return
     url = 'https://www.esse3.unimore.it/Guide/PaginaListaAppelli.do?FAC_ID=10005&CDS_ID=' + cds_id + '&AD_ID=X&DOCENTE_ID=X&DATA_ESA=&actionBar1=1'
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -136,7 +139,7 @@ def connectToEsse3Page(cod):
     driver = Chrome(service=Service(chrome_driver), options=chrome_options)
     exam_table = soup.find(attrs={"class": "table-1-body"})
     table_elem = exam_table.find_all("tr")
-    setZero()
+
 
     for i in range(len(table_elem)):
         tmp = {}
@@ -238,8 +241,12 @@ def connectToEsse3Page(cod):
         if check_exists_by_xpath(driver=driver, xpath="//button[@id='c-p-bn']"):
             driver.find_element(By.ID, "c-p-bn").click()
 
-
-        driver.find_element(By.NAME, "actionBar1").click()
+        try:
+            driver.find_element(By.NAME, "actionBar1").click()
+        except:
+            print("Non esiste la facoltà scelta")
+            setZero()
+            break
         list = driver.find_element(By.ID, "risultati")
 
 
@@ -286,7 +293,8 @@ def connectToEsse3Page(cod):
             semestre.append(3)
         print("\n\n")
 
-
+        if i > 4:
+            break
 
     tmp = [x for x in dateExam if x["exam"] not in examNull]
     setDateExam(tmp)
