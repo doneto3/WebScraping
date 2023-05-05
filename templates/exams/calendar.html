@@ -1,13 +1,203 @@
-{% extends 'exams/base.html' %}
+{% extends 'exams/common.html' %}
 
-{% block title %}
-Calendar
+
+Calendario {{ facolta.nome }}
+
+
+{% block script %}
+
+    <script src="http://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
+      integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+
+        $(document).ready(function() {
+            $('#btn').click(function (){
+
+                if(document.getElementById('dateStandard').value != ""){
+                    var jsDate = document.getElementById('dateStandard').value;
+                }
+                $.ajax({
+                url:"{% url 'facoltà' id=facolta.id %}", //replace with you url
+                method:'POST',
+                headers:{
+                    "X-CSRFToken": csrftoken
+                },
+                data:{
+                    data: jsDate,
+                },
+
+                success:function(resp){
+                    var startBody = resp.split("<table", 9).join("<table").length;
+                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clickd);
+                }
+            });
+
+            });
+
+            var stato = ""
+
+
+            $('#prev').click(function (){
+                stato = "prev";
+                $.ajax({
+                url:"{% url 'facoltà' id=facolta.id %}", //replace with you url
+                method:'POST',
+                headers:{
+                    "X-CSRFToken": csrftoken
+                },
+                data:{
+                    stato: stato,
+                },
+
+                success:function(resp){
+                    var startBody = resp.split("<table", 9).join("<table").length;
+                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clickd);
+                }
+            });
+            });
+
+            $('#next').click(function (){
+                stato = "next";
+                $.ajax({
+                url:"{% url 'facoltà' id=facolta.id %}", //replace with you url
+                method:'POST',
+                headers:{
+                    "X-CSRFToken": csrftoken
+                },
+                data:{
+                    stato: stato,
+                },
+
+                success:function(resp){
+                    console.log(resp)
+                    var startBody = resp.split("<table", 9).join("<table").length;
+                    console.log(startBody)
+                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    console.log(endBody)
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    console.log(bodyString)
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clickd);
+                }
+            });
+            });
+
+
+
+
+    var clickd = []
+    $('.check').change(function() {
+        if(this.checked) {
+            clickd.push(this.id);
+        }
+        if(!this.checked) {
+            const index = clickd.indexOf(this.id);
+            if (index > -1) {
+                clickd.splice(index, 1);
+            }
+        }
+        $.ajax({
+                url:"{% url 'facoltà' id=facolta.id %}", //replace with you url
+                method:'POST',
+                headers:{
+                    "X-CSRFToken": csrftoken
+                },
+                data:{
+                    lis: clickd,
+                },
+
+                success:function(resp){
+
+                    var startBody = resp.split("<table", 9).join("<table").length;
+                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clickd);
+                }
+            });
+    });
+});
+    </script>
+
 {% endblock %}
 
-{% block body %}
+
+{% block content %}
     <div class="clearfix">
-	    <a class="btn btn-info left" href="{% url 'facoltà' id=id i=i %}?{{ prev_month }}"> Previous Month </a>
-	    <a class="btn btn-info right" href="{% url 'facoltà' id=id i=i %}?{{ next_month }}"> Next Month </a>
+	    <a class="btn btn-info left" id="prev"> Previous Month </a>
+	    <a class="btn btn-info right" id="next"> Next Month </a>
     </div>
+
+    <div class="form-group">
+        <label class="active" for="dateStandard">Trova Data</label>
+        <input type="date" id="dateStandard" name="dateStandard">
+        <button id="btn">CERCA </button>
+    </div>
+
+    <div id="checkb">
+    <input type="checkbox" id="1" class="check">
+<label for="primao"> 1° Anno</label><br>
+<input type="checkbox" id="2" class="check">
+<label for="secondoa"> 2° Anno</label><br>
+<input type="checkbox" id="3" class="check">
+<label for="terzoa"> 3° Anno</label><br>
+    <input type="checkbox" id="4" class="check">
+<label for="primos"> 1° Semestre</label><br>
+<input type="checkbox" id="5" class="check">
+<label for="secondos"> 2° Semestre</label><br>
+<input type="checkbox" id="6" class="check">
+<label for="ciclo"> Ciclo Unico</label><br>
+
+    </div>
+
+
+    <style>
+    #checkb{
+        float: right;
+        margin-right: 80px;
+        margin-top: 100px;
+    }
+    </style>
+    <div class="prova"></div>
+
+
+
+
     {{ calendar }}
 {% endblock %}

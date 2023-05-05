@@ -10,9 +10,15 @@ from .utils import Calendar
 from django.utils.safestring import mark_safe
 from exams.HTMLParsing import *
 from django.http import HttpResponseRedirect
+from dateutil.relativedelta import relativedelta
 
 # Create your views here.
+global che, d
+che =[]
+d = ""
 
+def getChe():
+    return che
 def get_date(req_month):
     if req_month:
         year, month = (int(x) for x in req_month.split('-'))
@@ -37,20 +43,37 @@ class CalendarView(generic.ListView):
     model = DateExam
     template_name = 'exams/calendar.html'
     def get_context_data(self, **kwargs):
-
+        global ciao, d
         context = super().get_context_data(**kwargs)
-        d = get_date(self.request.GET.get('month', None))
-        cal = Calendar(d.year, d.month)
-        cal.getI(self.kwargs['i'], self.kwargs['id'])
+        if not d:
+            d = get_date(self.request.GET.get('month', None))
+        checklist = getChe()
+        cal = Calendar(d.year, d.month, self.kwargs['id'], checklist)
         html_cal = cal.formatmonth(withyear=True)
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
-        context['id'] = self.kwargs['id']
-        context['i'] = self.kwargs['i']
+        context['facolta'] = Facoltà.objects.get(id=self.kwargs['id'])
         return context
+    def post(self, request, *args, **kwargs):
+        global che, d
 
-
+        print(che)
+        stato = self.request.POST.get('stato')
+        data = self.request.POST.get('data')
+        if stato == 'next':
+            d += relativedelta(months=1)
+            return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?'+next_month(d))
+        elif stato == 'prev':
+            d += relativedelta(months=-1)
+            return HttpResponseRedirect('/exams/' + str(kwargs['id']) + '?' + prev_month(d))
+        else:
+            if data is not None:
+                d = dt.strptime(data, '%Y-%m-%d').date()
+            checklist = self.request.POST.getlist('lis[]')
+            checklist = [int(ch) for ch in checklist]
+            che = checklist
+            return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?month='+str(d.year)+'-'+str(d.month))
 
 
 
@@ -103,19 +126,22 @@ def restart():
     createFacoulty()
     for facoltà in Facoltà.objects.all():
         if getCod(facoltà) is not None:
-            #connectToEsse3Page(getCod(facoltà))
+            connectToEsse3Page(getCod(facoltà))
             createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
             createDateExam(facoltà)
         else:
             continue
 
-restart()
+#restart()
 
 
 def exams(request):
 
     facoltà = list(Facoltà.objects.all())
 
+    global che, d
+    d = ""
+    che = []
     dat = list(DateExam.objects.values_list('exam__facoltà__nome', flat=True))
 
     i = 0

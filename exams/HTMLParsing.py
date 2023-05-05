@@ -48,32 +48,6 @@ dipartimento = {"303": "10013",
                 "114": "10053",
                 "11": "7"}
 
-corso_di_studio_ingegneria = {
-    "20-269": "10668",
-    "20-218": "10727",
-    "20-268": "10582",
-    "20-200": "229",
-    "20-206": "235",
-    "20-267": "10358",
-    "20-210": "10294",
-    "20-270": "10726",
-    "20-203": "232",
-    "20-266": "10304",
-    "20-204": "233",
-    "20-216": "10667",
-    "20-264": "10302",
-    "20-201": "230",
-    "20-261": "10299",
-    "20-215": "10359",
-    "20-202": "231",
-    "20-212": "10296",
-    "20-262": "10300",
-    "20-217": "10706",
-    "20-205": "234",
-    "20-213": "10297",
-    "20-263": "10301",
-    "20-265": "10303"
-}
 
 calendars = {}
 
@@ -126,7 +100,7 @@ def apostrofoString(e):
 
 def connectToEsse3Page(cod):
     global anno, semestre, crediti, exam, durata, dateExam, examNull
-    cds_id = corso_di_studio_ingegneria.get(cod)
+    cds_id = getValue(cod)
     setZero()
     if cds_id is None:
         return
@@ -175,20 +149,20 @@ def connectToEsse3Page(cod):
         month = int(turno[3:5])
         year = int(turno[6:10])
         try:
-            hour = int(turno[13:15])
-            minute = int(turno[16:18])
+            hour = turno[13:15]
+            minute = turno[16:18]
             # response = GoogleCalendar.create_event(calendar_id, summary, description, day, month, year, hour, minute)
             # print(response['summary'])
             time.sleep(0.005)
         except:
-            hour = 9
-            minute = 0
+            hour = "09"
+            minute = "00"
             # response = GoogleCalendar.create_event(calendar_id, summary, description, day, month, year, hour, minute)
             # print(response['summary'])
             time.sleep(0.005)
 
-        print(summary + '\n' + description + '\n' + str(day) + '/' + str(month) + '/' + str(year) + ' ' + str(
-            hour) + ':' + str(minute) + '\n')
+        print(summary + '\n' + description + '\n' + str(day) + '/' + str(month) + '/' + str(year) + ' '
+              + hour + ':' + minute + '\n')
 
         for e in summary.split('] '):
             continue
@@ -202,7 +176,12 @@ def connectToEsse3Page(cod):
         tmp["tipo"] = tipo
         tmp["docente"] = docente
         tmp["num_iscr"] = num_iscr
-        tmp["data"] = datetime.datetime.strptime(str(day) + '/' + str(month) + '/' + str(year), '%d/%m/%Y')
+        try:
+            tmp["data"] = datetime.datetime.strptime(str(day) + '/' + str(month) + '/' + str(year) + ' '
+                                                     + hour + ':' + minute, '%d/%m/%Y %H:%M')
+        except:
+            tmp["data"] = datetime.datetime.strptime(str(day) + '/' + str(month) + '/' + str(year) + ' '
+                                                     + "09" + ':' + "00", '%d/%m/%Y %H:%M')
 
         dateExam.append(tmp)
 
@@ -221,17 +200,15 @@ def connectToEsse3Page(cod):
             exam.append(e)
         else:
             continue
-        driver.get("https://www.esse3.unimore.it/Guide/PaginaRicercaInse.do")
-        select = Select(driver.find_element(By.XPATH, "//select[@id='facoltaPoli']"))
-        select.select_by_value("F10005")
-        select = Select(driver.find_element(By.XPATH, "//select[@id='annoAccademico']"))
-
-
 
         today = datetime.date.today()
 
         year = today.year
         year -= 1
+        driver.get("https://www.esse3.unimore.it/Guide/PaginaRicercaInse.do")
+        select = Select(driver.find_element(By.XPATH, "//select[@id='facoltaPoli']"))
+        select.select_by_value("F10005")
+        select = Select(driver.find_element(By.XPATH, "//select[@id='annoAccademico']"))
 
         select.select_by_value(str(year))
         select = driver.find_element(By.TAG_NAME, "input")
@@ -249,9 +226,6 @@ def connectToEsse3Page(cod):
             break
         list = driver.find_element(By.ID, "risultati")
 
-
-
-
         if check_exists_by_xpath(list,"//*[contains(text(),'" + e + "')]"):
             list.find_element(By.XPATH, "//*[contains(text(),'" + e + "')]").click()
         else:
@@ -262,8 +236,6 @@ def connectToEsse3Page(cod):
         table.find_element(By.XPATH, "//*[contains(text(),'" + cod + "')]").click()
 
         list = driver.find_elements(By.XPATH, "//div[@id='infobox']/dl")
-
-
 
         infoexam = []
         for el in list[0].text.split('\n'):
@@ -293,9 +265,7 @@ def connectToEsse3Page(cod):
             semestre.append(3)
         print("\n\n")
 
-        if i > 4:
-            break
-
+        break
     tmp = [x for x in dateExam if x["exam"] not in examNull]
     setDateExam(tmp)
     print(dateExam)
@@ -305,6 +275,14 @@ def connectToEsse3Page(cod):
 def setDateExam(date):
     global dateExam
     dateExam = date
+
+def getValue(cod):
+    global options
+    for i in range(1, len(options)):
+        if cod in options[i].text:
+            return options[i]['value']
+    return None
+
 
 def print_dipartimento():
     url = 'https://www.esse3.unimore.it/Guide/PaginaListaAppelli.do'
