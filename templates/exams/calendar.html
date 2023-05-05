@@ -164,6 +164,8 @@ var csrftoken = getCookie('csrftoken');
 	    <a class="btn btn-info right" id="next"> Next Month </a>
     </div>
 
+    <div id="filtro">
+
     <div class="form-group">
         <label class="active" for="dateStandard">Trova Data</label>
         <input type="date" id="dateStandard" name="dateStandard">
@@ -185,14 +187,25 @@ var csrftoken = getCookie('csrftoken');
 <label for="ciclo"> Ciclo Unico</label><br>
 
     </div>
-
+</div>
 
     <style>
-    #checkb{
-        float: right;
-        margin-right: 80px;
-        margin-top: 100px;
+    #filtro{
+        float: left;
+        margin-left: 15px;
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 10px;
+        padding-bottom: 40px;
+        padding-top: 40px;
+        padding-left: 20px;
+        padding-right: 20px;
     }
+    #checkb{
+
+
+    }
+
     </style>
     <div class="prova"></div>
 
