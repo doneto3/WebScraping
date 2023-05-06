@@ -31,24 +31,6 @@ def setZero():
     dateExam = []
     examNull = []
 
-dipartimento = {"303": "10013",
-                "103": "10002",
-                "150": "10003",
-                "183": "10014",
-                "111": "10004",
-                "120": "10005",
-                "304": "10015",
-                "301": "10011",
-                "116": "10006",
-                "117": "10007",
-                "101": "10008",
-                "216": "10009",
-                "302": "10012",
-                "112": "10010",
-                "114": "10053",
-                "11": "7"}
-
-
 calendars = {}
 
 def check_exists_by_xpath(driver, xpath):
@@ -151,14 +133,10 @@ def connectToEsse3Page(cod):
         try:
             hour = turno[13:15]
             minute = turno[16:18]
-            # response = GoogleCalendar.create_event(calendar_id, summary, description, day, month, year, hour, minute)
-            # print(response['summary'])
             time.sleep(0.005)
         except:
             hour = "09"
             minute = "00"
-            # response = GoogleCalendar.create_event(calendar_id, summary, description, day, month, year, hour, minute)
-            # print(response['summary'])
             time.sleep(0.005)
 
         print(summary + '\n' + description + '\n' + str(day) + '/' + str(month) + '/' + str(year) + ' '
@@ -265,11 +243,9 @@ def connectToEsse3Page(cod):
             semestre.append(3)
         print("\n\n")
 
-        break
     tmp = [x for x in dateExam if x["exam"] not in examNull]
     setDateExam(tmp)
     print(dateExam)
-        # exit(0)
 
 
 def setDateExam(date):

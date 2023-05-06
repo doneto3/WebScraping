@@ -1,12 +1,11 @@
-from django.contrib.auth.models import User
-from django.core.management.color import no_style
-from django.db import connection
 from datetime import datetime as dt, timedelta, date
 from django.shortcuts import render
 from .models import Facoltà, Exam, DateExam
 from django.views import generic
 import calendar
+import threading
 from .utils import Calendar
+from django.core.management import call_command
 from django.utils.safestring import mark_safe
 from exams.HTMLParsing import *
 from django.http import HttpResponseRedirect
@@ -57,8 +56,6 @@ class CalendarView(generic.ListView):
         return context
     def post(self, request, *args, **kwargs):
         global che, d
-
-        print(che)
         stato = self.request.POST.get('stato')
         data = self.request.POST.get('data')
         if stato == 'next':
@@ -86,7 +83,6 @@ def createFacoulty():
 def createDateExam(facoltà):
     date = getDateExam()
     for d in date:
-        print(d["exam"])
         DateExam.objects.get_or_create(data=d["data"], exam=Exam.objects.get(nome=d["exam"], facoltà=facoltà))
 
 
@@ -103,26 +99,16 @@ def getCod(facoltà):
         break
     for ret in e.split('['):
         continue
-    print(ret)
     return ret
 
 
 
-import threading
+
 
 def restart():
 
     threading.Timer(86400.0, restart).start()
-
-    fac = Facoltà.objects.all()
-    for fa in fac:
-        fa.delete()
-
-    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Facoltà, Exam, DateExam])
-    with connection.cursor() as cursor:
-        for sql in sequence_sql:
-            cursor.execute(sql)
-
+    call_command('flush', '--no-input')
     createFacoulty()
     for facoltà in Facoltà.objects.all():
         if getCod(facoltà) is not None:
@@ -155,91 +141,8 @@ def exams(request):
     context = {
         "facoltà": facoltà,
     }
-    return render(request, 'exams/tutorial_bootstrap.html', context=context)
-
-
-def choice(request,id):
-    facoltà = Facoltà.objects.get(id=id)
-    global i
-    i=id
-    context = {
-        "facoltà": facoltà,
-    }
-
-    return render(request, 'exams/choices.html', context=context)
+    return render(request, 'exams/facolt.html', context=context)
 
 
 
-print(dateExam)
-
-
-def deleteExams(request, id):
-
-    print("QUI")
-    fac = Facoltà.objects.get(id=id)
-    ex = Exam.objects.all()
-    for e in ex:
-        if e.facoltà == fac:
-            e.delete()
-
-
-    return HttpResponseRedirect('/exams/'+str(fac.id))
-
-
-def deleteDateExams(request, id):
-
-    fac = Facoltà.objects.get(id=id)
-
-    dex = DateExam.objects.all()
-    for de in dex:
-        if de.exam.facoltà == fac:
-            de.delete()
-
-
-    return HttpResponseRedirect('/exams/'+str(fac.id))
-
-
-
-
-
-def f(request, id, i):
-    global ids
-    a = 0
-    s = 0
-    ex = []
-    facoltà = Facoltà.objects.get(id=id)
-
-    if i == 1:
-        a = 1
-        s = 1
-    elif i == 2:
-        a = 1
-        s = 2
-    elif i == 3:
-        a = 2
-        s = 1
-    elif i == 4:
-        a = 2
-        s = 2
-    elif i == 5:
-        a = 3
-        s = 1
-    else:
-        a = 3
-        s = 2
-
-    date = DateExam.objects.all().order_by('data')
-    e = Exam.objects.all()
-    for el in e:
-        if el.facoltà.id == facoltà.id:
-            ex.append(el)
-
-    context = {
-        "facoltà": facoltà,
-        "exam": ex,
-        "date": date,
-        "semestre": s,
-        "anno": a,
-    }
-    return render(request, "exams/facoltà.html", context=context)
 

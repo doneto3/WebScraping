@@ -1,7 +1,7 @@
 {% extends 'exams/common.html' %}
 
 
-Calendario {{ facolta.nome }}
+
 
 
 {% block script %}
@@ -159,6 +159,7 @@ var csrftoken = getCookie('csrftoken');
 
 
 {% block content %}
+    <h2 style="text-align: center">Calendario {{ facolta.nome }}</h2>
     <div class="clearfix">
 	    <a class="btn btn-info left" id="prev"> Previous Month </a>
 	    <a class="btn btn-info right" id="next"> Next Month </a>
@@ -177,8 +178,10 @@ var csrftoken = getCookie('csrftoken');
 <label for="primao"> 1° Anno</label><br>
 <input type="checkbox" id="2" class="check">
 <label for="secondoa"> 2° Anno</label><br>
+        {% if facolta.anno == 3 %}
 <input type="checkbox" id="3" class="check">
 <label for="terzoa"> 3° Anno</label><br>
+        {% endif %}
     <input type="checkbox" id="4" class="check">
 <label for="primos"> 1° Semestre</label><br>
 <input type="checkbox" id="5" class="check">
@@ -201,9 +204,16 @@ var csrftoken = getCookie('csrftoken');
         padding-left: 20px;
         padding-right: 20px;
     }
-    #checkb{
-
-
+    li{
+        background-color:lightblue;
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+    ul {
+        list-style-type: none;
     }
 
     </style>
