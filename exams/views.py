@@ -112,7 +112,14 @@ def restart():
     createFacoulty()
     for facoltà in Facoltà.objects.all():
         if getCod(facoltà) is not None:
-            connectToEsse3Page(getCod(facoltà))
+            today = datetime.date.today()
+            year = today.year
+            year -= 1
+            while year >= 2019:
+                ret = connectToEsse3Page(getCod(facoltà), year)
+                if ret == 1:
+                    break
+                year -= 1
             createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
             createDateExam(facoltà)
         else:

@@ -80,7 +80,7 @@ def apostrofoString(e):
         ret.append(temp)
     return ret[0]+'&apos;'+ret[1]
 
-def connectToEsse3Page(cod):
+def connectToEsse3Page(cod, yea):
     global anno, semestre, crediti, exam, durata, dateExam, examNull
     cds_id = getValue(cod)
     setZero()
@@ -179,16 +179,13 @@ def connectToEsse3Page(cod):
         else:
             continue
 
-        today = datetime.date.today()
 
-        year = today.year
-        year -= 1
         driver.get("https://www.esse3.unimore.it/Guide/PaginaRicercaInse.do")
         select = Select(driver.find_element(By.XPATH, "//select[@id='facoltaPoli']"))
         select.select_by_value("F10005")
         select = Select(driver.find_element(By.XPATH, "//select[@id='annoAccademico']"))
 
-        select.select_by_value(str(year))
+        select.select_by_value(str(yea))
         select = driver.find_element(By.TAG_NAME, "input")
         select.clear()
         select.send_keys(createCourseString(cod))
@@ -201,7 +198,7 @@ def connectToEsse3Page(cod):
         except:
             print("Non esiste la facoltà scelta")
             setZero()
-            break
+            return 0
         list = driver.find_element(By.ID, "risultati")
 
         if check_exists_by_xpath(list,"//*[contains(text(),'" + e + "')]"):
@@ -246,6 +243,7 @@ def connectToEsse3Page(cod):
     tmp = [x for x in dateExam if x["exam"] not in examNull]
     setDateExam(tmp)
     print(dateExam)
+    return 1
 
 
 def setDateExam(date):
