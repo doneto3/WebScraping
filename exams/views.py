@@ -117,11 +117,9 @@ def restart():
             year -= 1
             while year >= 2019:
                 ret = connectToEsse3Page(getCod(facoltà), year)
-                if ret == 1:
-                    break
                 year -= 1
-            createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
-            createDateExam(facoltà)
+                createExam(nome=getExam(), anno=getAnno(), semestre=getSemestre(), crediti=getCrediti(), facoltà=facoltà)
+                createDateExam(facoltà)
         else:
             continue
 
