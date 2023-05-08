@@ -58,6 +58,7 @@ class CalendarView(generic.ListView):
         global che, d
         stato = self.request.POST.get('stato')
         data = self.request.POST.get('data')
+        checklist = self.request.POST.getlist('lis[]')
         if stato == 'next':
             d += relativedelta(months=1)
             return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?'+next_month(d))
@@ -67,9 +68,9 @@ class CalendarView(generic.ListView):
         else:
             if data is not None:
                 d = dt.strptime(data, '%Y-%m-%d').date()
-            checklist = self.request.POST.getlist('lis[]')
-            checklist = [int(ch) for ch in checklist]
-            che = checklist
+            elif checklist is not None:
+                checklist = [int(ch) for ch in checklist]
+                che = checklist
             return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?month='+str(d.year)+'-'+str(d.month))
 
 
