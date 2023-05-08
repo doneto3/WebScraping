@@ -15,7 +15,7 @@ class Calendar(HTMLCalendar):
         events_per_day = events.filter(data__day=day)
         d = ''
         for event in events_per_day:
-            d += f'<li> {event} </li>'
+            d += f'<li> {event.exam}<br>{event.data.time()} </li>'
         if day != 0:
             return f"<td><span class='date'>{day}</span><ul> {d} </ul></td>"
         return '<td></td>'
@@ -60,6 +60,7 @@ class Calendar(HTMLCalendar):
                 events = events.exclude(exam__semestre=2)
             if 6 not in self.checklist:
                 events = events.exclude(exam__semestre=3)
+        events = events.order_by("data")
         cal = f'<table style="width:70%" border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
         cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
         cal += f'{self.formatweekheader()}\n'
