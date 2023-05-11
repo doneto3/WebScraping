@@ -51,8 +51,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 9).join("<table").length;
-                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var startBody = resp.split("<table", 11).join("<table").length;
+                    var endBody = resp.split("</table>", 11).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -79,8 +79,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 9).join("<table").length;
-                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var startBody = resp.split("<table", 11).join("<table").length;
+                    var endBody = resp.split("</table>", 11).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -104,9 +104,9 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
                     console.log(resp)
-                    var startBody = resp.split("<table", 9).join("<table").length;
+                    var startBody = resp.split("<table", 11).join("<table").length;
                     console.log(startBody)
-                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var endBody = resp.split("</table>", 11).join("</table>").length;
                     console.log(endBody)
                     var bodyString = resp.substring(startBody+85,endBody);
                     console.log(bodyString)
@@ -140,12 +140,13 @@ var csrftoken = getCookie('csrftoken');
                 },
                 data:{
                     lis: clickd,
+                    liss: clicka,
                 },
 
                 success:function(resp){
 
-                    var startBody = resp.split("<table", 9).join("<table").length;
-                    var endBody = resp.split("</table>", 9).join("</table>").length;
+                    var startBody = resp.split("<table", 11).join("<table").length;
+                    var endBody = resp.split("</table>", 11).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -154,6 +155,42 @@ var csrftoken = getCookie('csrftoken');
                 }
             });
     });
+
+    var clicka = []
+    $('.checka').change(function() {
+        if(this.checked) {
+            clicka.push(this.id);
+        }
+        if(!this.checked) {
+            const index = clicka.indexOf(this.id);
+            if (index > -1) {
+                clicka.splice(index, 1);
+            }
+        }
+        $.ajax({
+                url:"{% url 'facoltà' id=facolta.id %}", //replace with you url
+                method:'POST',
+                headers:{
+                    "X-CSRFToken": csrftoken
+                },
+                data:{
+                    lis: clickd,
+                    liss: clicka,
+                },
+
+                success:function(resp){
+
+                    var startBody = resp.split("<table",11).join("<table").length;
+                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clicka);
+                }
+            });
+    });
+
 });
     </script>
 
@@ -192,7 +229,19 @@ var csrftoken = getCookie('csrftoken');
 <label for="ciclo"> Ciclo Unico</label><br>
 
     </div>
+
+<div id="aule">
+    <br><label><b>Aule:</b></label><br>
+    <input type="checkbox" id="1" class="checka">
+<label>FA-2F</label><br>
+<input type="checkbox" id="2" class="checka">
+<label>Fa-2g</label><br>
+<input type="checkbox" id="3" class="checka">
+<label>FA-2E</label><br>
+    </div>
+
 </div>
+
 
     <style>
     #filtro{
@@ -206,8 +255,16 @@ var csrftoken = getCookie('csrftoken');
         padding-left: 20px;
         padding-right: 20px;
     }
-    li{
+    li#event{
         background-color:lightblue;
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+    li#room{
+        background-color:lightsalmon;
         border-width: 1px;
         border-style: solid;
         border-radius: 10px;
@@ -225,4 +282,6 @@ var csrftoken = getCookie('csrftoken');
 
 
     {{ calendar }}
+
+
 {% endblock %}

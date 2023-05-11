@@ -292,3 +292,58 @@ def get_corso_di_studio_name(cod):
             cds = options[i].text
     return cds
 
+
+
+def connectToAule(day, month, year):
+    url = 'http://www.aule.unimore.it/index.php?page=3&content=view_prenotazioni&vista=day&area=27&_lang=it&day=' + day + '&month=' + month + '&year=' + year
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    exam_table = soup.find_all(attrs={"bgcolor": "#FFFFFF"})
+    FAF = []
+    FAg = []
+    FAe = []
+    aule = {}
+    for e in exam_table:
+        if "07:" in e.get('title', 'No title attribute') or "19:15" in e.get('title', 'No title attribute') or "20:" in e.get('title', 'No title attribute') or "21:" in e.get('title', 'No title attribute') or "22:" in e.get('title', 'No title attribute') or "23:" in e.get('title', 'No title attribute') or "19:30" in e.get('title', 'No title attribute'):
+           pass
+        else:
+            if "FA-2F" in e.get('title', 'No title attribute'):
+                FAF.append(e.get('title', 'No title attribute')[0:11])
+            if "Fa-2g" in e.get('title', 'No title attribute'):
+                FAg.append(e.get('title', 'No title attribute')[0:11])
+            if "FA-2E" in e.get('title', 'No title attribute'):
+                FAe.append(e.get('title', 'No title attribute')[0:11])
+
+    aule['FA-2F'] = FAF
+    aule['Fa-2g'] = FAg
+    aule['FA-2E'] = FAe
+
+    ret = {}
+    ret['FA-2F'] = creaSpan(aule, 'FA-2F')
+    ret['Fa-2g'] = creaSpan(aule, 'Fa-2g')
+    ret['FA-2E'] = creaSpan(aule, 'FA-2E')
+
+    return ret
+
+def creaSpan(aule, aula):
+    span = []
+    for i in range(len(aule[aula])):
+        if i == 0:
+            print(aule[aula][i][:5])
+            start = aule[aula][i][:5]
+        else:
+            if i == len(aule[aula])-1:
+                print(aule[aula][i][6:])
+                end = aule[aula][i][6:]
+                span.append(start+'-'+end)
+            elif aule[aula][i-1][6:] == aule[aula][i][:5]:
+                continue
+            else:
+                print(aule[aula][i-1][6:])
+                end = aule[aula][i-1][6:]
+                span.append(start+'-'+end)
+                print(aule[aula][i][:5])
+                start = aule[aula][i][:5]
+    return span
+
+

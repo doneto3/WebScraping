@@ -42,6 +42,12 @@ CREDITI = (
     (24, '24'),
 )
 
+AULE = (
+    (1, 'FA-2F'),
+    (2, 'Fa-2g'),
+    (3, 'FA-2E'),
+)
+
 class Facoltà(models.Model):
     nome = models.CharField(max_length=100)
     anno = models.IntegerField(choices=ANNI)
@@ -101,3 +107,19 @@ class DateExam(models.Model):
 
     def __str__(self):
         return self.exam.nome+' '+str(self.data)
+
+
+
+class Aula(models.Model):
+    nome = models.IntegerField(choices=AULE)
+    data = models.DateTimeField()
+    span_disponibilità = models.CharField(max_length=100)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['data', 'nome', 'span_disponibilità'], name='unique_migration_Aula'
+            )
+        ]
+    def __str__(self):
+        return self.get_nome_display() + ' ' + self.span_disponibilità

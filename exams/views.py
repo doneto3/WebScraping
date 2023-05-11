@@ -1,6 +1,6 @@
 from datetime import datetime as dt, timedelta, date
 from django.shortcuts import render
-from .models import Facoltà, Exam, DateExam
+from .models import Facoltà, Exam, DateExam, Aula
 from django.views import generic
 import calendar
 import threading
@@ -12,12 +12,15 @@ from django.http import HttpResponseRedirect
 from dateutil.relativedelta import relativedelta
 
 # Create your views here.
-global che, d
+global che, ches, d
 che =[]
+ches =[]
 d = ""
 
 def getChe():
     return che
+def getChes():
+    return ches
 def get_date(req_month):
     if req_month:
         year, month = (int(x) for x in req_month.split('-'))
@@ -47,7 +50,8 @@ class CalendarView(generic.ListView):
         if not d:
             d = get_date(self.request.GET.get('month', None))
         checklist = getChe()
-        cal = Calendar(d.year, d.month, self.kwargs['id'], checklist)
+        checkslist = getChes()
+        cal = Calendar(d.year, d.month, self.kwargs['id'], checklist, checkslist)
         html_cal = cal.formatmonth(withyear=True)
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
@@ -55,10 +59,11 @@ class CalendarView(generic.ListView):
         context['facolta'] = Facoltà.objects.get(id=self.kwargs['id'])
         return context
     def post(self, request, *args, **kwargs):
-        global che, d
+        global che, ches, d
         stato = self.request.POST.get('stato')
         data = self.request.POST.get('data')
         checklist = self.request.POST.getlist('lis[]')
+        checkslist = self.request.POST.getlist('liss[]')
         if stato == 'next':
             d += relativedelta(months=1)
             return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?'+next_month(d))
@@ -68,9 +73,13 @@ class CalendarView(generic.ListView):
         else:
             if data is not None:
                 d = dt.strptime(data, '%Y-%m-%d').date()
-            elif checklist is not None:
-                checklist = [int(ch) for ch in checklist]
+            else:
+                if checklist:
+                    checklist = [int(ch) for ch in checklist]
                 che = checklist
+                if checkslist:
+                    checkslist = [int(ch) for ch in checkslist]
+                ches = checkslist
             return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?month='+str(d.year)+'-'+str(d.month))
 
 
@@ -93,6 +102,18 @@ def createExam(nome,anno,semestre,crediti,facoltà):
 
         Exam.objects.get_or_create(nome=nome[i], anno=anno[i], semestre=semestre[i], crediti=crediti[i], facoltà=facoltà)
 
+def createAule():
+    today = date.today()
+    endday = today + relativedelta(years=1)
+    while today != endday:
+        aule = connectToAule(str(today)[8:], str(today)[5:7], str(today)[:4])
+        for span in aule['FA-2E']:
+            Aula.objects.get_or_create(nome=1, data=today, span_disponibilità=span)
+        for span in aule['Fa-2g']:
+            Aula.objects.get_or_create(nome=2, data=today, span_disponibilità=span)
+        for span in aule['FA-2F']:
+            Aula.objects.get_or_create(nome=3, data=today, span_disponibilità=span)
+        today += relativedelta(days=1)
 
 def getCod(facoltà):
     temp = facoltà.nome
@@ -111,6 +132,7 @@ def restart():
     threading.Timer(86400.0, restart).start()
     call_command('flush', '--no-input')
     createFacoulty()
+    createAule()
     for facoltà in Facoltà.objects.all():
         if getCod(facoltà) is not None:
             today = datetime.date.today()
@@ -131,9 +153,10 @@ def exams(request):
 
     facoltà = list(Facoltà.objects.all())
 
-    global che, d
+    global che, ches, d
     d = ""
     che = []
+    ches = []
     dat = list(DateExam.objects.values_list('exam__facoltà__nome', flat=True))
 
     i = 0
