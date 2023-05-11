@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from .models import DateExam, Aula
+import time
 class Calendar(HTMLCalendar):
     def __init__(self, year=None, month=None, id=0, checklist=[], checkspan=[], span=0):
         self.year = year
@@ -18,23 +19,11 @@ class Calendar(HTMLCalendar):
         aula = aula.filter(data__day=day)
         d = ''
         if not events_per_day and weekday != 5 and weekday != 6:
-            if aula.filter(nome=3):
-                d += f'<li id=\'room\' ><b>Disponibilità<br>FA-2F:</b><br>'
-                for sp in aula.filter(nome=3):
-                    d += f'{sp.span_disponibilità}<br>'
-                d += f'</li>'
-            if aula.filter(nome=2):
-                d += f'<li id=\'room\' ><b>Disponibilità<br>Fa-2g:</b><br>'
-                for sp in aula.filter(nome=2):
-                    d += f'{sp.span_disponibilità}<br>'
-                d += f'</li>'
-            if aula.filter(nome=1):
-                d += f'<li id=\'room\' ><b>Disponibilità<br>FA-2E:</b><br>'
-                for sp in aula.filter(nome=1):
-                    d += f'{sp.span_disponibilità}<br>'
-                d += f'</li>'
-        for event in events_per_day:
-            d += f'<li id=\'event\' > {event.exam}<br>{event.data.time()} </li>'
+            for a in aula:
+                d += f'<li id=\'room\'><b>{a.get_nome_display()}</b><br>{a.span_disponibilità}</li>'
+        else:
+            for event in events_per_day:
+                d += f'<li id=\'event\' > {event.exam}<br>{event.data.time()} </li>'
         if day != 0:
             return f"<td><span class='date'>{day}</span><ul> {d} </ul></td>"
         return '<td></td>'
@@ -86,13 +75,27 @@ class Calendar(HTMLCalendar):
             aula = aula.exclude(nome=2)
         if 3 not in self.checkspan:
             aula = aula.exclude(nome=3)
-
         events = events.order_by("data")
         aula = aula.order_by("nome")
+        if self.span != 0:
+            for a in aula:
+                start_time, end_time = a.span_disponibilità.split('-')
+                start_time = datetime.strptime(start_time, '%H:%M')
+                end_time = datetime.strptime(end_time, '%H:%M')
+
+                duration = end_time - start_time
+
+                if duration < timedelta(minutes=self.span):
+                    aula = aula.exclude(data=a.data, nome=a.nome, span_disponibilità=a.span_disponibilità)
+                else:
+                    continue
         cal = f'<table style="width:70%" border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
         cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
         cal += f'{self.formatweekheader()}\n'
+        start = time.time()
         for week in self.monthdays2calendar(self.year, self.month):
             cal += f'{self.formatweek(week, events, aula)}\n'
+        end = time.time()
+        print(end-start)
         cal += f'</table>'
         return cal

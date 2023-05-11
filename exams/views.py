@@ -12,11 +12,14 @@ from django.http import HttpResponseRedirect
 from dateutil.relativedelta import relativedelta
 
 # Create your views here.
-global che, ches, d
+global che, ches, d, span
 che =[]
 ches =[]
 d = ""
+span = 0
 
+def getSpan():
+    return span
 def getChe():
     return che
 def getChes():
@@ -45,13 +48,14 @@ class CalendarView(generic.ListView):
     model = DateExam
     template_name = 'exams/calendar.html'
     def get_context_data(self, **kwargs):
-        global ciao, d
+        global ciao, d, span
         context = super().get_context_data(**kwargs)
         if not d:
             d = get_date(self.request.GET.get('month', None))
         checklist = getChe()
         checkslist = getChes()
-        cal = Calendar(d.year, d.month, self.kwargs['id'], checklist, checkslist)
+        span = getSpan()
+        cal = Calendar(d.year, d.month, self.kwargs['id'], checklist, checkslist, span)
         html_cal = cal.formatmonth(withyear=True)
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
@@ -59,11 +63,12 @@ class CalendarView(generic.ListView):
         context['facolta'] = Facoltà.objects.get(id=self.kwargs['id'])
         return context
     def post(self, request, *args, **kwargs):
-        global che, ches, d
+        global che, ches, d, span
         stato = self.request.POST.get('stato')
         data = self.request.POST.get('data')
         checklist = self.request.POST.getlist('lis[]')
         checkslist = self.request.POST.getlist('liss[]')
+        ora = self.request.POST.get('ora')
         if stato == 'next':
             d += relativedelta(months=1)
             return HttpResponseRedirect('/exams/'+str(kwargs['id'])+'?'+next_month(d))
@@ -73,6 +78,8 @@ class CalendarView(generic.ListView):
         else:
             if data is not None:
                 d = dt.strptime(data, '%Y-%m-%d').date()
+            elif ora:
+                span = int(ora)
             else:
                 if checklist:
                     checklist = [int(ch) for ch in checklist]
@@ -153,7 +160,8 @@ def exams(request):
 
     facoltà = list(Facoltà.objects.all())
 
-    global che, ches, d
+    global che, ches, d, span
+    span = 0
     d = ""
     che = []
     ches = []

@@ -51,8 +51,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 11).join("<table").length;
-                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var startBody = resp.split("<table", 13).join("<table").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -79,8 +79,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 11).join("<table").length;
-                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var startBody = resp.split("<table", 13).join("<table").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -104,9 +104,9 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
                     console.log(resp)
-                    var startBody = resp.split("<table", 11).join("<table").length;
+                    var startBody = resp.split("<table", 13).join("<table").length;
                     console.log(startBody)
-                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
                     console.log(endBody)
                     var bodyString = resp.substring(startBody+85,endBody);
                     console.log(bodyString)
@@ -145,8 +145,8 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
 
-                    var startBody = resp.split("<table", 11).join("<table").length;
-                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var startBody = resp.split("<table", 13).join("<table").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -180,8 +180,8 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
 
-                    var startBody = resp.split("<table",11).join("<table").length;
-                    var endBody = resp.split("</table>", 11).join("</table>").length;
+                    var startBody = resp.split("<table", 13).join("<table").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -189,6 +189,29 @@ var csrftoken = getCookie('csrftoken');
                     alert(error.error+" "+clicka);
                 }
             });
+    });
+
+    $("#orario").change(function(){
+        $.ajax({
+            url:"{% url 'facoltà' id=facolta.id %}",
+            type: 'POST',
+            headers:{
+                    "X-CSRFToken": csrftoken
+                },
+            data:{
+                ora: $('#orario').val(),
+            },
+            success:function(resp){
+
+                    var startBody = resp.split("<table",13).join("<table").length;
+                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clicka);
+                }
+        });
     });
 
 });
@@ -238,6 +261,32 @@ var csrftoken = getCookie('csrftoken');
 <label>Fa-2g</label><br>
 <input type="checkbox" id="3" class="checka">
 <label>FA-2E</label><br>
+<label>Scegli qunate ore ti servono:</label>
+    <select id="orario">
+        <option value="000">Scegli</option>
+        <option value="030">00:30</option>
+        <option value="060">01:00</option>
+        <option value="090">01:30</option>
+        <option value="120">02:00</option>
+        <option value="150">02:30</option>
+        <option value="180">03:00</option>
+        <option value="210">03:30</option>
+        <option value="240">04:00</option>
+        <option value="270">04:30</option>
+        <option value="300">05:00</option>
+        <option value="330">05:30</option>
+        <option value="360">06:00</option>
+        <option value="390">06:30</option>
+        <option value="420">07:00</option>
+        <option value="450">07:30</option>
+        <option value="480">08:00</option>
+        <option value="510">08:30</option>
+        <option value="540">09:00</option>
+        <option value="570">09:30</option>
+        <option value="600">10:00</option>
+        <option value="630">10:30</option>
+        <option value="660">11:00</option>
+    </select>
     </div>
 
 </div>
