@@ -5,4 +5,5 @@ from .models import Facoltà
 urlpatterns = [
     path('', views.exams, name='home'),
     path('<int:id>', views.CalendarView.as_view(), name='facoltà'),
+    path('<int:id>/aggiorna', views.aggiornaAule, name='aggiornaAule'),
 ]

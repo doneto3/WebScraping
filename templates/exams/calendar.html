@@ -34,7 +34,6 @@ var csrftoken = getCookie('csrftoken');
 
         $(document).ready(function() {
             var jsDate = ""
-
             $('#btn').click(function (){
 
                 if(document.getElementById('dateStandard').value !== ""){
@@ -51,8 +50,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 13).join("<table").length;
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -79,8 +78,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    var startBody = resp.split("<table", 13).join("<table").length;
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -103,11 +102,8 @@ var csrftoken = getCookie('csrftoken');
                 },
 
                 success:function(resp){
-                    console.log(resp)
-                    var startBody = resp.split("<table", 13).join("<table").length;
-                    console.log(startBody)
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
-                    console.log(endBody)
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     console.log(bodyString)
                     $('table').html(bodyString);
@@ -145,8 +141,8 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
 
-                    var startBody = resp.split("<table", 13).join("<table").length;
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -180,8 +176,8 @@ var csrftoken = getCookie('csrftoken');
 
                 success:function(resp){
 
-                    var startBody = resp.split("<table", 13).join("<table").length;
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -190,8 +186,15 @@ var csrftoken = getCookie('csrftoken');
                 }
             });
     });
-
+    var oldora = $('#orario').val()
     $("#orario").change(function(){
+        if( ((Date.parse("1970-01-01T"+$('#fasciaA').val()+":00") - Date.parse("1970-01-01T"+$('#fasciaDa').val()+":00"))/60000) < parseInt($('#orario').val())
+            && parseInt($('#orario').val()) !== 0 ){
+            alert("Attenzione, i valori di fascia oraria e ore da utilizzare non sono coerenti")
+            $("#orario").val(oldora).change();
+        }
+        else {
+            oldora = $('#orario').val()
         $.ajax({
             url:"{% url 'facoltà' id=facolta.id %}",
             type: 'POST',
@@ -203,8 +206,8 @@ var csrftoken = getCookie('csrftoken');
             },
             success:function(resp){
 
-                    var startBody = resp.split("<table",13).join("<table").length;
-                    var endBody = resp.split("</table>", 13).join("</table>").length;
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
                     var bodyString = resp.substring(startBody+85,endBody);
                     $('table').html(bodyString);
                 },
@@ -212,8 +215,76 @@ var csrftoken = getCookie('csrftoken');
                     alert(error.error+" "+clicka);
                 }
         });
+        }
     });
+    var oldDateDa = $('#fasciaDa').val()
+    $("#fasciaDa").change(function(){
+        if(
+            ( Date.parse("1970-01-01T"+$('#fasciaDa').val()+":00") >= (Date.parse("1970-01-01T"+$('#fasciaA').val()+":00")) )
+            || ( ((Date.parse("1970-01-01T"+$('#fasciaA').val()+":00") - Date.parse("1970-01-01T"+$('#fasciaDa').val()+":00"))/60000) < parseInt($('#orario').val())
+            && parseInt($('#orario').val()) !== 0 ) ){
+            alert("Attenzione, i valori di fascia oraria e/o ore da utilizzare non sono coerenti")
+            $("#fasciaDa").val(oldDateDa).change();
+        }
+        else {
+            oldDateDa = $('#fasciaDa').val()
+        $.ajax({
+            url:"{% url 'facoltà' id=facolta.id %}",
+            type: 'POST',
+            headers:{
+                    "X-CSRFToken": csrftoken
+                },
+            data:{
+                fasciaDa: $('#fasciaDa').val(),
+            },
+            success:function(resp){
 
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clicka);
+                }
+        });
+
+        }
+    });
+    var oldDateA = $('#fasciaA').val()
+    $("#fasciaA").change(function(){
+        console.log(oldDateA)
+        if(
+            ( Date.parse("1970-01-01T"+$('#fasciaDa').val()+":00") >= (Date.parse("1970-01-01T"+$('#fasciaA').val()+":00")) )
+            || ( ((Date.parse("1970-01-01T"+$('#fasciaA').val()+":00") - Date.parse("1970-01-01T"+$('#fasciaDa').val()+":00"))/60000) < parseInt($('#orario').val())
+            && parseInt($('#orario').val()) !== 0 ) ){
+            alert("Attenzione, i valori di fascia oraria e/o ore da utilizzare non sono coerenti")
+            $("#fasciaA").val(oldDateA).change();
+        }
+        else {
+            oldDateA = $('#fasciaA').val()
+        $.ajax({
+            url:"{% url 'facoltà' id=facolta.id %}",
+            type: 'POST',
+            headers:{
+                    "X-CSRFToken": csrftoken
+                },
+            data:{
+                fasciaA: $('#fasciaA').val(),
+            },
+            success:function(resp){
+
+                    var startBody = resp.split("<table", 17).join("<table").length;
+                    var endBody = resp.split("</table>", 17).join("</table>").length;
+                    var bodyString = resp.substring(startBody+85,endBody);
+                    $('table').html(bodyString);
+                },
+                error:function(error){
+                    alert(error.error+" "+clicka);
+                }
+        });
+        }
+    });
 });
     </script>
 
@@ -287,6 +358,61 @@ var csrftoken = getCookie('csrftoken');
         <option value="630">10:30</option>
         <option value="660">11:00</option>
     </select>
+    <br>
+
+    <label>Dalle: </label>
+    <select id="fasciaDa">
+        <option value="08:00">08:00</option>
+        <option value="08:30">08:30</option>
+        <option value="09:00">09:00</option>
+        <option value="09:30">09:30</option>
+        <option value="10:00">10:00</option>
+        <option value="10:30">10:30</option>
+        <option value="11:00">11:00</option>
+        <option value="11:30">11:30</option>
+        <option value="12:00">12:00</option>
+        <option value="12:30">12:30</option>
+        <option value="13:00">13:00</option>
+        <option value="13:30">13:30</option>
+        <option value="14:00">14:00</option>
+        <option value="14:30">14:30</option>
+        <option value="15:00">15:00</option>
+        <option value="15:30">15:30</option>
+        <option value="16:00">16:00</option>
+        <option value="16:30">16:30</option>
+        <option value="17:00">17:00</option>
+        <option value="17:30">17:30</option>
+        <option value="18:00">18:00</option>
+        <option value="18:30">18:30</option>
+    </select>
+    <label>Alle: </label>
+    <select id="fasciaA">
+        <option value="08:30">08:30</option>
+        <option value="09:00">09:00</option>
+        <option value="09:30">09:30</option>
+        <option value="10:00">10:00</option>
+        <option value="10:30">10:30</option>
+        <option value="11:00">11:00</option>
+        <option value="11:30">11:30</option>
+        <option value="12:00">12:00</option>
+        <option value="12:30">12:30</option>
+        <option value="13:00">13:00</option>
+        <option value="13:30">13:30</option>
+        <option value="14:00">14:00</option>
+        <option value="14:30">14:30</option>
+        <option value="15:00">15:00</option>
+        <option value="15:30">15:30</option>
+        <option value="16:00">16:00</option>
+        <option value="16:30">16:30</option>
+        <option value="17:00">17:00</option>
+        <option value="17:30">17:30</option>
+        <option value="18:00">18:00</option>
+        <option value="18:30">18:30</option>
+        <option selected="true" value="19:00">19:00</option>
+    </select>
+    <br><br>
+    <a href="{{ facolta.id }}/aggiorna" class="btn btn-info left" id="aul"> Aggiorna Aule </a>
+
     </div>
 
 </div>

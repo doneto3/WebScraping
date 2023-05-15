@@ -2,14 +2,17 @@ from datetime import datetime, timedelta
 from calendar import HTMLCalendar
 from .models import DateExam, Aula
 import time
+from dateutil.relativedelta import relativedelta
 class Calendar(HTMLCalendar):
-    def __init__(self, year=None, month=None, id=0, checklist=[], checkspan=[], span=0):
+    def __init__(self, year=None, month=None, id=0, checklist=[], checkspan=[], span=0, fasciaDa="08:00", fasciaA="19:00"):
         self.year = year
         self.month = month
         self.id = id
         self.checklist = checklist
         self.checkspan = checkspan
         self.span = span
+        self.fasciaDa = fasciaDa
+        self.fasciaA = fasciaA
         super(Calendar, self).__init__()
 
     # formats a day as a td
@@ -77,18 +80,22 @@ class Calendar(HTMLCalendar):
             aula = aula.exclude(nome=3)
         events = events.order_by("data")
         aula = aula.order_by("nome")
-        if self.span != 0:
-            for a in aula:
-                start_time, end_time = a.span_disponibilità.split('-')
-                start_time = datetime.strptime(start_time, '%H:%M')
-                end_time = datetime.strptime(end_time, '%H:%M')
+        for a in aula:
 
-                duration = end_time - start_time
+            start_time, end_time = a.span_disponibilità.split('-')
+            start_time = datetime.strptime(start_time, '%H:%M')
+            end_time = datetime.strptime(end_time, '%H:%M')
 
+            duration = end_time - start_time
+
+            if self.span != 0:
                 if duration < timedelta(minutes=self.span):
                     aula = aula.exclude(data=a.data, nome=a.nome, span_disponibilità=a.span_disponibilità)
-                else:
-                    continue
+            if start_time < datetime.strptime(self.fasciaDa, '%H:%M') or end_time > datetime.strptime(self.fasciaA, '%H:%M'):
+                aula = aula.exclude(data=a.data, nome=a.nome, span_disponibilità=a.span_disponibilità)
+
+
+
         cal = f'<table style="width:70%" border="0" cellpadding="0" cellspacing="0" class="calendar">\n'
         cal += f'{self.formatmonthname(self.year, self.month, withyear=withyear)}\n'
         cal += f'{self.formatweekheader()}\n'
