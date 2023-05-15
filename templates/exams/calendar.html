@@ -5,7 +5,7 @@
 
 
 {% block script %}
-
+    {% load static %}
     <script src="http://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
@@ -412,7 +412,7 @@ var csrftoken = getCookie('csrftoken');
     </select>
     <br><br>
     <a href="{{ facolta.id }}/aggiorna" class="btn btn-info left" id="aul"> Aggiorna Aule </a>
-
+    <img title="Questa operazione richiede un po' di tempo" alt="Questa operazione richiede un po' di tempo" aria-label="Questa operazione richiede un po' di tempo" src="{% static 'exams/info.gif' %}">
     </div>
 
 </div>
