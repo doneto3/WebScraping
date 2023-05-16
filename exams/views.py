@@ -17,7 +17,7 @@ fasciaDa = "08:00"
 fasciaA = "19:00"
 che =[]
 ches =[]
-d = date.today()
+d = date.today().replace(day=1)
 span = 0
 
 def getSpan():
@@ -129,7 +129,6 @@ def createAule(mesi):
     global d
     today = d
     endday = today + relativedelta(months=mesi)
-    endday = endday.replace(day=1)
     while today != endday:
         aule = connectToAule(str(today)[8:], str(today)[5:7], str(today)[:4])
         for span in aule['FA-2E']:
@@ -182,7 +181,7 @@ def exams(request):
     fasciaDa = "08:00"
     fasciaA = "19:00"
     span = 0
-    d = date.today()
+    d = date.today().replace(day=1)
     che = []
     ches = []
     dat = list(DateExam.objects.values_list('exam__facoltà__nome', flat=True))
