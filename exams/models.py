@@ -76,18 +76,6 @@ class Exam(models.Model):
             )
         ]
 
-    def show_period(self):
-        ret = ''
-
-        for nome in ANNI:
-            if (nome[0] == self.anno):
-                ret += nome[1] + ' '
-
-        for nome in SEMESTRI:
-            if (nome[0] == self.semestre):
-                ret += nome[1]
-
-        return ret
 
     def __str__(self):
         return self.nome
